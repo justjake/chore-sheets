@@ -229,7 +229,6 @@ class App extends React.Component {
   renderChoresPage(firstDay) {
     const days = this.state.weeks * 7;
     const dates = range(days).map((_, i) => offsetDate(i, firstDay))
-    console.log(dates)
     const mondays = range(this.state.weeks).map((_, i) => offsetDate(i * 7, firstDay))
 
     const thead = (
@@ -299,6 +298,9 @@ class App extends React.Component {
     return (
       <>
       <h3>Settings</h3>
+      <p>
+        To <a href="https://github.com/justjake/chore-sheets/edit/master/index.html">edit</a> the chores list, fork or PR <a href="https://github.com/justjake/chore-sheets/">justjake/chore-sheets</a> on Github.
+      </p>
       <table>
         <tbody>
         <tr>
