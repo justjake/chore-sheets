@@ -129,9 +129,9 @@ const chores = {
     "take out trash",
     "take out recycling",
     "clean counters",
-    "dishes: into dishwasher",
-    "dishes: handwashing",
-    "dishes: empty dishwasher",
+    "dishwasher: load",
+    "dishwaser: empty",
+    "manual dishes",
     "clean fridge",
   ],
   "living room": [
@@ -198,8 +198,8 @@ class App extends React.Component {
     this.state = {
       monday: getMonday(new Date()),
       weeks: 2,
-      paper: landscape(papers.legal),
-      padding: 0,
+      paper: papers.legal,
+      padding: 0.25,
     }
   }
 
@@ -213,7 +213,7 @@ class App extends React.Component {
   }
 
   renderNextWeek() {
-    const next = decrWeek(this.state.monday)
+    const next = incrWeek(this.state.monday)
     return (
       <button onClick={() => this.setState({ monday: next })}>
         {renderDate(next)} {'-->'}
@@ -256,7 +256,7 @@ class App extends React.Component {
     }
     const choreRows = []
     for (let room of Object.keys(chores)) {
-      const items = chores[room].concat("other (write in)")
+      const items = chores[room].concat("other (write)")
       for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const colspan = i == 0 ? items.length : 1;
@@ -335,7 +335,9 @@ class App extends React.Component {
         </tr>
         </tbody>
       </table>
-      <h3>Chores</h3>
+      <h3>Chore Sheet Preview</h3>
+      <p>Note that the browser will mangle this a little bit when formatting for
+      printing, so double-check the preview.</p>
       </div>
       {this.renderChores()}
       </div>
