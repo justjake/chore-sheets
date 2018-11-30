@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-<title>you're moms a chore chart</title>
+<title>Chore Sheet Generator</title>
 <script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -124,6 +124,7 @@ thead td {
 }
 </style>
 <script type="text/babel">
+// CONSTANTS: THESE ARE EASY TO CHANGE
 const chores = {
   kitchen: [
     "take out trash",
@@ -159,7 +160,13 @@ const papers = {
   "letter": [8.5, 11],
   "legal": [8.5, 14],
 }
+const landscape = ([w, h]) => [h, w]
+papers.landlegal = landscape(papers.legal)
+papers.landletter = landscape(papers.letter)
+
 const paddings = [0, 0.1, 0.25, 0.3, 0.5]
+
+// utility funcs
 function getMonday(d) {
   d = new Date(d);
   const day = d.getDay()
@@ -188,9 +195,6 @@ const renderDate = (d) => d.toLocaleDateString("en-US", {
   month: 'numeric',
   day: 'numeric',
 })
-const landscape = ([w, h]) => [h, w]
-papers.landlegal = landscape(papers.legal)
-papers.landletter = landscape(papers.letter)
 
 class App extends React.Component {
   constructor(props) {
@@ -200,6 +204,7 @@ class App extends React.Component {
       weeks: 2,
       paper: papers.legal,
       padding: 0.25,
+      pages: 2,
     }
   }
 
@@ -221,9 +226,8 @@ class App extends React.Component {
     )
   }
 
-  renderChores() {
+  renderChoresPage(firstDay) {
     const days = this.state.weeks * 7;
-    const firstDay = this.state.monday;
     const dates = range(days).map((_, i) => offsetDate(i, firstDay))
     console.log(dates)
     const mondays = range(this.state.weeks).map((_, i) => offsetDate(i * 7, firstDay))
@@ -290,25 +294,38 @@ class App extends React.Component {
     )
   }
 
-  render() {
-    const { weeks } = this.state
+  renderSettings() {
+    const { weeks, pages } = this.state
     return (
-      <div>
-      <div className="no-print">
+      <>
       <h3>Settings</h3>
       <table>
         <tbody>
         <tr>
           <th>Start Day</th>
-          <td>{this.renderPrevWeek()}</td>
           <td>{renderDate(this.state.monday)}</td>
-          <td>{this.renderNextWeek()}</td>
+          <td>
+            {this.renderPrevWeek()}
+            {this.renderNextWeek()}
+          </td>
+          <td>Weeks actually start on Monday. Refresh to reset.</td>
         </tr>
         <tr>
-          <th>Number of weeks</th>
-          <td><button onClick={() => this.setState({ weeks: weeks - 1})}>-</button></td>
+          <th>Weeks per Page</th>
           <td>{this.state.weeks}</td>
-          <td><button onClick={() => this.setState({ weeks: weeks + 1})}>+</button></td>
+          <td>
+            <button onClick={() => this.setState({ weeks: weeks - 1})}>-</button>
+            <button onClick={() => this.setState({ weeks: weeks + 1})}>+</button>
+          </td>
+        </tr>
+        <tr>
+          <th>Total Pages</th>
+          <td>{this.state.pages}</td>
+          <td>
+            <button onClick={() => this.setState({ pages: pages - 1})}>-</button>
+            <button onClick={() => this.setState({ pages: pages + 1})}>+</button>
+          </td>
+          <td>Don't print too many cuz we might want to iterate</td>
         </tr>
         <tr>
           <th>Paper</th>
@@ -335,11 +352,22 @@ class App extends React.Component {
         </tr>
         </tbody>
       </table>
-      <h3>Chore Sheet Preview</h3>
+      </>
+    )
+  }
+
+  render() {
+    const { weeks, pages } = this.state
+    return (
+      <div>
+      <div className="no-print">
+      {this.renderSettings()}
+      <h3>Intended Output</h3>
       <p>Note that the browser will mangle this a little bit when formatting for
-      printing, so double-check the preview.</p>
+      printing, so double-check the print preview.</p>
+      <p>You will need to adjust your print settings in Chrome to match the paper size selected.</p>
       </div>
-      {this.renderChores()}
+      {range(this.state.pages).map((_, i) => this.renderChoresPage(offsetDate(i * weeks * 7, this.state.monday)))}
       </div>
     )
   }
@@ -350,6 +378,7 @@ ReactDOM.render(<App />, document.querySelector('#app'))
 </head>
 
 <body>
+  <h1>Chore Sheet Generator</h1>
   <div id="app">
     This should be replaced by Javascript. If not, check the console for errors.
   </div>
