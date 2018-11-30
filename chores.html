@@ -26,6 +26,7 @@ body {
   border: 1px solid red;
   font-size: 12px;
   page-break-inside: avoid;
+  background: #fff;
 }
 
 table {
@@ -119,10 +120,7 @@ thead td {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   white-space: nowrap;
-    width: 100%;
-      display: block;
-        height: 100%;
-          font-size: 200%;
+  font-size: 200%;
 }
 </style>
 <script type="text/babel">
@@ -161,6 +159,7 @@ const papers = {
   "letter": [8.5, 11],
   "legal": [8.5, 14],
 }
+const paddings = [0, 0.1, 0.25, 0.3, 0.5]
 function getMonday(d) {
   d = new Date(d);
   const day = d.getDay()
@@ -200,6 +199,7 @@ class App extends React.Component {
       monday: getMonday(new Date()),
       weeks: 2,
       paper: landscape(papers.legal),
+      padding: 0,
     }
   }
 
@@ -271,7 +271,7 @@ class App extends React.Component {
     )
 
     return (
-      <div className="page" style={{width: this.state.paper[0] + 'in', height: this.state.paper[1] + 'in'}}>
+      <div className="page" style={{width: this.state.paper[0] + 'in', height: this.state.paper[1] + 'in', padding: this.state.padding + 'in'}}>
         <table>
         {thead}
         {tbody}
@@ -280,10 +280,12 @@ class App extends React.Component {
     )
   }
 
-  renderPaper([w, h]) {
+  renderPaper([w, h], p) {
     return (
-      <div className="page" style={{width: 10 * w + 'px', height: 10 * h + 'px', padding: '1em'}}>
+      <div className="page" style={{width: 10 * w + 'px', height: 10 * h + 'px', padding: '1em', borderWidth: (p * 10) + 'px'}}>
         {w}in x {h}in
+        <br />
+        {p}in padding
       </div>
     )
   }
@@ -310,13 +312,22 @@ class App extends React.Component {
         </tr>
         <tr>
           <th>Paper</th>
-          <td>{ this.renderPaper(this.state.paper) }</td>
-          <td colSpan="2">
+          <td style={{background: 'black'}}>{ this.renderPaper(this.state.paper, this.state.padding) }</td>
+          <td>
           {Object.keys(papers).map(name => {
             const paper = papers[name]
             return (
               <button onClick={() => this.setState({paper})}>
                 {this.renderPaper(paper)}
+              </button>
+            )
+          })}
+          </td>
+          <td>
+          {paddings.map(p => {
+            return (
+              <button onClick={() => this.setState({ padding: p })}>
+                {p}in
               </button>
             )
           })}
