@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<head>
+<title>you're moms a chore chart</title>
+<script crossorigin src="https://unpkg.com/react@16/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+* {
+  box-sizing: border-box;
+}
+
+th {
+  font-weight: inherit;
+  border: inherit;
+}
+
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 5px;
+}
+
+.page {
+  margin: 10px;
+  border: 1px solid red;
+  font-size: 12px;
+  page-break-inside: avoid;
+}
+
+table {
+  width: 100%;
+  height: 100%;
+  border-collapse: collapse;
+  empty-cells: hide;
+}
+
+@media print {
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  .no-print {
+    display: none
+  }
+
+  .page {
+    margin: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+@page {
+  margin: 0;
+}
+
+.noborder {
+  border: none;
+}
+
+th {
+  padding: 0.2em 0.3em;
+
+}
+
+td {
+  border: 1px solid #000;
+  height: 1em;
+  padding: 0.2em 0.3em;
+}
+
+thead td:not(first-child) {
+  text-align: center;
+}
+
+thead td {
+  border-bottom: 5px double #000;
+}
+
+.chore-room {
+  max-width: 1in;
+}
+.chore-name {
+  max-width: 1in;
+}
+.top {
+  border-top: 1px solid black;
+}
+
+.bottom {
+  border-bottom: 1px solid black;
+}
+
+.chore-name {
+  text-align: right;
+}
+
+.chore-done {
+  width: .5in;
+  height: .5in;
+}
+
+.chore-room
+{
+  width: 3em;
+  vertical-align: bottom;
+  text-align: center;
+}
+
+
+.chore-room span
+{
+  -ms-writing-mode: tb-rl;
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+    width: 100%;
+      display: block;
+        height: 100%;
+          font-size: 200%;
+}
+</style>
+<script type="text/babel">
+const chores = {
+  kitchen: [
+    "take out trash",
+    "take out recycling",
+    "clean counters",
+    "dishes: into dishwasher",
+    "dishes: handwashing",
+    "dishes: empty dishwasher",
+    "clean fridge",
+  ],
+  "living room": [
+    "clean white table",
+    "clean black table",
+    "clean coffee table",
+    "empty trash",
+    "clean couch",
+  ],
+  "public bathroom": [
+    "clean tub",
+    "clean toilet",
+    "clean mirror",
+    "clean sink",
+    "fill toilet paper",
+  ],
+  "errands": [
+    "toilet paper",
+    "paper towels",
+    "laundry detergent",
+    "dish detergent",
+  ]
+}
+const papers = {
+  "letter": [8.5, 11],
+  "legal": [8.5, 14],
+}
+function getMonday(d) {
+  d = new Date(d);
+  const day = d.getDay()
+  // adjust when day is sunday
+  const diff = d.getDate() - day + (day == 0 ? -6:1)
+  return new Date(d.setDate(diff))
+}
+
+function offsetDate(offset, d) {
+  const r = new Date(d)
+  r.setDate(d.getDate() + offset)
+  return r
+}
+
+function weekIndex(now) {
+  let onejan = new Date(now.getFullYear(), 0, 1);
+  return Math.ceil( (((now - onejan) / 86400000) + onejan.getDay() + 1) / 7 );
+}
+
+const incrWeek = offsetDate.bind(null, 7)
+const decrWeek = offsetDate.bind(null, -7)
+const range = (x) => Array.apply(null, Array(x))
+
+const renderDate = (d) => d.toLocaleDateString("en-US", {
+  weekday: 'short',
+  month: 'numeric',
+  day: 'numeric',
+})
+const landscape = ([w, h]) => [h, w]
+papers.landlegal = landscape(papers.legal)
+papers.landletter = landscape(papers.letter)
+
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      monday: getMonday(new Date()),
+      weeks: 2,
+      paper: landscape(papers.legal),
+    }
+  }
+
+  renderPrevWeek() {
+    const prev = decrWeek(this.state.monday)
+    return (
+      <button onClick={() => this.setState({ monday: prev })}>
+        {'<--'} {renderDate(prev)}
+      </button>
+    )
+  }
+
+  renderNextWeek() {
+    const next = decrWeek(this.state.monday)
+    return (
+      <button onClick={() => this.setState({ monday: next })}>
+        {renderDate(next)} {'-->'}
+      </button>
+    )
+  }
+
+  renderChores() {
+    const days = this.state.weeks * 7;
+    const firstDay = this.state.monday;
+    const dates = range(days).map((_, i) => offsetDate(i, firstDay))
+    console.log(dates)
+    const mondays = range(this.state.weeks).map((_, i) => offsetDate(i * 7, firstDay))
+
+    const thead = (
+      <thead>
+        <tr>
+          <td className="noborder"></td>
+          <td className="noborder"></td>
+          {mondays.map(d => <td colSpan="7">Week {weekIndex(d)} of {d.getFullYear()}</td>)}
+        </tr>
+        <tr>
+          <td className="noborder"></td>
+          <td className="noborder"></td>
+          {dates.map(d => <td className="day-of-week">{renderDate(d)}</td>)}
+        </tr>
+      </thead>
+    )
+
+    const renderRow = (room, chore, rowspan = 1, top = false, bottom = false) => {
+      const classNames = `${top ? 'top' : ''} ${bottom ? 'bottom' : ''}`
+      return (
+        <tr>
+          { rowspan == 1 ? null : <th className="chore-room top bottom" rowSpan={rowspan}><span>{room}</span></th>}
+          <th className={classNames + ' chore-name'}>{chore}</th>
+          {dates.map(d => <td className="chore-done"></td>)}
+        </tr>
+      )
+
+    }
+    const choreRows = []
+    for (let room of Object.keys(chores)) {
+      const items = chores[room].concat("other (write in)")
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i]
+        const colspan = i == 0 ? items.length : 1;
+        choreRows.push(renderRow(room, item, colspan, i == 0, i == items.length - 1))
+      }
+    }
+
+    const tbody = (
+      <tbody>
+      {choreRows}
+      </tbody>
+    )
+
+    return (
+      <div className="page" style={{width: this.state.paper[0] + 'in', height: this.state.paper[1] + 'in'}}>
+        <table>
+        {thead}
+        {tbody}
+        </table>
+      </div>
+    )
+  }
+
+  renderPaper([w, h]) {
+    return (
+      <div className="page" style={{width: 10 * w + 'px', height: 10 * h + 'px', padding: '1em'}}>
+        {w}in x {h}in
+      </div>
+    )
+  }
+
+  render() {
+    const { weeks } = this.state
+    return (
+      <div>
+      <div className="no-print">
+      <h3>Settings</h3>
+      <table>
+        <tbody>
+        <tr>
+          <th>Start Day</th>
+          <td>{this.renderPrevWeek()}</td>
+          <td>{renderDate(this.state.monday)}</td>
+          <td>{this.renderNextWeek()}</td>
+        </tr>
+        <tr>
+          <th>Number of weeks</th>
+          <td><button onClick={() => this.setState({ weeks: weeks - 1})}>-</button></td>
+          <td>{this.state.weeks}</td>
+          <td><button onClick={() => this.setState({ weeks: weeks + 1})}>+</button></td>
+        </tr>
+        <tr>
+          <th>Paper</th>
+          <td>{ this.renderPaper(this.state.paper) }</td>
+          <td colSpan="2">
+          {Object.keys(papers).map(name => {
+            const paper = papers[name]
+            return (
+              <button onClick={() => this.setState({paper})}>
+                {this.renderPaper(paper)}
+              </button>
+            )
+          })}
+          </td>
+        </tr>
+        </tbody>
+      </table>
+      <h3>Chores</h3>
+      </div>
+      {this.renderChores()}
+      </div>
+    )
+  }
+}
+
+ReactDOM.render(<App />, document.querySelector('#app'))
+</script>
+</head>
+
+<body>
+  <div id="app">
+    This should be replaced by Javascript. If not, check the console for errors.
+  </div>
+</body>
