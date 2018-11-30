@@ -88,12 +88,17 @@ thead td {
 .chore-name {
   max-width: 1in;
 }
+
 .top {
-  border-top: 1px solid black;
+  border-top: 5px double #000;
 }
 
 .bottom {
-  border-bottom: 1px solid black;
+  border-bottom: 5px double #000;
+}
+
+.new-week {
+  border-left: 5px double #000;
 }
 
 .chore-name {
@@ -252,7 +257,7 @@ class App extends React.Component {
         <tr>
           { rowspan == 1 ? null : <th className="chore-room top bottom" rowSpan={rowspan}><span>{room}</span></th>}
           <th className={classNames + ' chore-name'}>{chore}</th>
-          {dates.map(d => <td className="chore-done"></td>)}
+          {dates.map(d => <td className={"chore-done " + classNames}></td>)}
         </tr>
       )
 
